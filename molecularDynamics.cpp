@@ -29,18 +29,14 @@ MolecularDynamics::~MolecularDynamics(){
   v2 = 0;
 };
 
-
 // Molecular Dynamics - Measure
 void MolecularDynamics::measure() {
   // Steps for measurment, loop over meas
-
   for(i_of_meas = 0; i_of_meas < n_of_meas; ++i_of_meas) {
     // steps between measurement
     for(istep = 0; istep < n_bet_meas; ++istep) {
       position_verlet(N, h, y, v);
     };
-
-    // cout << "measure loop" << endl;
 
     for(i = 0; i < N; ++i){
       v2 += v[i]*v[i]; // collect data for <v^2>
@@ -51,15 +47,25 @@ void MolecularDynamics::measure() {
   };
 
   v2/= n_of_meas * N; // average v^2 is the temperature
+  
 
-  cout << "measure histogram" << endl;
-  for(ihist = 0; ihist < 2*NH + 1; ++ihist) {
-    u = pow((ihist - NH)*binsize, 2);
-    // Only print out non-zero entries
-    if(hist[ihist] != 0 || fabs(u) < 9 *v2 ) {
-      hist[ihist] /= binsize*n_of_meas*N; // normalize the histogram 
-    }
-  };
+  cout << "Temperature: " << v2 << endl;
+  cout << "v P(v) P(v)(Boltz)" << endl;
+  ofstream fileOut;
+
+  fileOut.open("md_analysis.csv", ios::app);
+  if(fileOut) {
+    fileOut << "binsize," << "histogram," << "expected gaussian" << endl;
+    for(ihist = 0; ihist < 2*NH + 1; ++ihist) {
+      u = pow((ihist - NH)*binsize, 2);
+      // Only print out non-zero entries
+      if(hist[ihist] != 0 || fabs(u) < 9 * v2 ) {
+        hist[ihist] /= binsize*n_of_meas*N; // normalize the histogram 
+        // Wirte to file histogram and expected Gaussian
+        fileOut << binsize*(ihist-NH) << "," <<  hist[ihist] << "," << exp(-0.5*u/v2) / (sqrt(2*3.14159*v2)) << endl;
+      }
+    };
+  }
 };
 
 // Molecular Dynamics - Equilibrate
