@@ -47,14 +47,12 @@ void MolecularDynamics::measure() {
   };
 
   v2/= n_of_meas * N; // average v^2 is the temperature
-  
 
-  cout << "Temperature: " << v2 << endl;
   cout << "v P(v) P(v)(Boltz)" << endl;
   ofstream fileOut;
-
   fileOut.open("md_analysis.csv", ios::app);
   if(fileOut) {
+    fileOut << "Temperature," << v2 << endl;
     fileOut << "binsize," << "histogram," << "expected gaussian" << endl;
     for(ihist = 0; ihist < 2*NH + 1; ++ihist) {
       u = pow((ihist - NH)*binsize, 2);
