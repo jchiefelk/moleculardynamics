@@ -29,26 +29,8 @@ MolecularDynamics::~MolecularDynamics(){
   v2 = 0;
 };
 
-// Molecular Dynamics - Measure
-void MolecularDynamics::measure() {
-  // Steps for measurment, loop over meas
-  for(i_of_meas = 0; i_of_meas < n_of_meas; ++i_of_meas) {
-    // steps between measurement
-    for(istep = 0; istep < n_bet_meas; ++istep) {
-      position_verlet(N, h, y, v);
-    };
-
-    for(i = 0; i < N; ++i){
-      v2 += v[i]*v[i]; // collect data for <v^2>
-      iv = NH + round(v[i]/ binsize); // add to histogram
-      hist[iv] +=1;
-    };
-  
-  };
-
-  v2/= n_of_meas * N; // average v^2 is the temperature
-
-  cout << "v P(v) P(v)(Boltz)" << endl;
+// Molecular Dynamics - Write to File
+void MolecularDynamics::write_to_file() {
   ofstream fileOut;
   fileOut.open("md_analysis.csv", ios::app);
   if(fileOut) {
@@ -64,6 +46,36 @@ void MolecularDynamics::measure() {
       }
     };
   }
+};
+
+// Molecular Dynamics - Bin Velocity
+void MolecularDynamics::bin() {
+  for(i = 0; i < N; ++i){
+    v2 += v[i]*v[i]; // collect data for <v^2>
+    iv = NH + round(v[i]/ binsize); // add to histogram
+    hist[iv] +=1;
+  };
+};
+
+// Molecular Dynamics - Simulation Step
+void MolecularDynamics::simulation_step() {
+  for(istep = 0; istep < n_bet_meas; ++istep) {
+    position_verlet(N, h, y, v);
+  };
+};
+
+// Molecular Dynamics - Measure
+void MolecularDynamics::measure() {
+  // Steps for measurment, loop over meas
+  for(i_of_meas = 0; i_of_meas < n_of_meas; ++i_of_meas) {
+    // steps between measurement
+    simulation_step();
+    bin();
+  };
+
+  v2/= n_of_meas * N; // average v^2 is the temperature
+  cout << "v P(v) P(v)(Boltz)" << endl;
+  write_to_file();
 };
 
 // Molecular Dynamics - Equilibrate

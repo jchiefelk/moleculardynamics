@@ -21,7 +21,9 @@ class MolecularDynamics {
     void initialize();
     void equilibrate();
     void measure();
-
+    void write_to_file();
+    void bin();
+    void simulation_step();
 
     // Destructors
     ~MolecularDynamics();
